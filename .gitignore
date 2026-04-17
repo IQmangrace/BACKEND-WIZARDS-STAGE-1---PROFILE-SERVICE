@@ -1,2 +1,28 @@
 .env
 node_modules/
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Deployment
+.vercel
+.railway/
+
+# Optional
+package-lock.json
