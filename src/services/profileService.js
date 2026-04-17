@@ -22,14 +22,18 @@ const cleanProfile = (profile) => {
 const createOrGetProfile = async (name) => {
   const normalizedName = name.toLowerCase().trim();
 
-  if (
-    !/^[A-Za-z]{2,}(?: [A-Za-z]{2,})*$/.test(normalizedName) || 
-    /[aeiou]{3,}|[^aeiou]{4,}|([a-z])\2{2,}|^[a-z]{6,}$/i.test(normalizedName)
-  ) {
-    const err = new Error("Invalid name format");
-    err.status = 400;
-    throw err;
-  }
+  // Simple and safe name validation
+if (!name || typeof name !== 'string' || name.trim() === '') {
+  const err = new Error("Missing or empty name parameter");
+  err.status = 400;
+  throw err;
+}
+
+if (normalizedName.length < 2) {
+  const err = new Error("Name must be at least 2 characters long");
+  err.status = 400;
+  throw err;
+}
 
   const existing = await Profile.findOne({ name: normalizedName });
   if (existing) {
@@ -128,3 +132,4 @@ export default {
   getAllProfiles,
   deleteProfile
 };
+
