@@ -1,10 +1,11 @@
+dotenv.config();
 import express from 'express';
 import cors from 'cors';
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import profileRoutes from './routes/profileRoutes.js';
+import connectDB from './config/database.js'; // import connectDB
 
-dotenv.config();
+//
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,23 +19,13 @@ app.use('/api', profileRoutes);
 
 // Health check
 app.get('/', (req, res) => {
-  res.json({ 
-    message: "✅ Backend Wizards Stage 1 API is running (ES Modules)" 
-  });
+  res.json({ message: "✅ Backend Wizards Stage 1 API (ESM)" });
 });
 
-// MongoDB Connection
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log('✅ Successfully connected to MongoDB Atlas');
-  } catch (error) {
-    console.error('❌ MongoDB Connection Error:', error.message);
-  }
-};
-
+// Connect DB
 connectDB();
 
+// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server on http://localhost:${PORT}`);
 });
