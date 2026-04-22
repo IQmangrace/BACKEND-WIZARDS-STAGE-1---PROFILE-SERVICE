@@ -1,7 +1,7 @@
 {
   "name": "backend-wizards-stage1",
   "version": "1.0.0",
-  "description": "Profile Intelligence Service - Backend Wizards Stage 1",
+  "description": "Profile Intelligence Service - Backend Wizards Stage 2",
   "type": "module",
   "main": "src/server.js",
   "scripts": {

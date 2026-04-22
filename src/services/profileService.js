@@ -1,6 +1,6 @@
 import Profile from '../models/Profile.js';
 import { fetchAllApis } from './externalApiService.js';
-import { getAgeGroup, getPrimaryCountry } from '../utils/helpers.js';
+import { parseNaturalLanguageQuery } from '../utils/helpers.js';
 import { generateUUIDv7 } from '../utils/uuid.js';
 
 const cleanProfile = (profile) => {
@@ -10,10 +10,10 @@ const cleanProfile = (profile) => {
     name: p.name,
     gender: p.gender,
     gender_probability: p.gender_probability ? Number(p.gender_probability.toFixed(2)) : null,
-    sample_size: p.sample_size,
     age: p.age,
     age_group: p.age_group,
     country_id: p.country_id,
+    country_name: p.country_name,
     country_probability: p.country_probability ? Number(p.country_probability.toFixed(2)) : null,
     created_at: p.created_at || p.createdAt
   };
@@ -65,10 +65,10 @@ if (normalizedName.length < 2) {
     name: normalizedName,
     gender: genderData.gender,
     gender_probability: genderData.probability,
-    sample_size: genderData.count,
     age: ageData.age,
     age_group: getAgeGroup(ageData.age),
     country_id: primaryCountry.country_id,
+    country_name: primaryCountry.country_name,
     country_probability: primaryCountry.country_probability,
     created_at: new Date()
   };
@@ -86,16 +86,29 @@ const getProfileById = async (id) => {
   return cleanProfile(profile);
 };
 
-const getAllProfiles = async (filters = {}) => {
+const getAllProfiles = async (filters = {}, sort_by = 'created_at', order = -1, page = 1, limit = 10) => {
   const query = {};
-  if (filters.gender) { query.gender = new RegExp(`^${filters.gender}$`, "i"); }
-  if (filters.country_id) { query.country_id = new RegExp(`^${filters.country_id}$`, "i"); }
-  if (filters.age_group) { query.age_group = new RegExp(`^${filters.age_group}$`, "i"); }
 
+  // Build query filters
+  if (filters.gender) { query.gender = new RegExp(`^${filters.gender}$`, "i"); }
+  if (filters.age_group) { query.age_group = new RegExp(`^${filters.age_group}$`, "i"); }
+  if (filters.country_id) { query.country_id = new RegExp(`^${filters.country_id}$`, "i"); }
+  if (filters.min_age !== undefined) { query.age = { ...query.age, $gte: filters.min_age }; }
+  if (filters.max_age !== undefined) { query.age = { ...query.age, $lte: filters.max_age }; }
+  if (filters.min_gender_probability !== undefined) { query.gender_probability = { ...query.gender_probability, $gte: filters.min_gender_probability }; }
+  if (filters.min_country_probability !== undefined) { query.country_probability = { ...query.country_probability, $gte: filters.min_country_probability }; }
+
+  const sort = {};
+  sort[sort_by] = order;
+
+  const skip = (page - 1) * limit;
+
+  const total = await Profile.countDocuments(query);
   const profiles = await Profile.find(query)
-    .select('id name gender age age_group country_id createdAt')
-    .lean()
-    .sort({ createdAt: -1 });
+    .sort(sort)
+    .skip(skip)
+    .limit(limit)
+    .lean();
 
   const formatted = profiles.map(p => {
     p.created_at = p.createdAt;
@@ -106,7 +119,12 @@ const getAllProfiles = async (filters = {}) => {
     return p;
   });
 
-  return { count: formatted.length, data: formatted };
+  return { total, data: formatted };
+};
+
+const searchProfiles = async (query, page = 1, limit = 10) => {
+  const filters = parseNaturalLanguageQuery(query);
+  return await getAllProfiles(filters, 'created_at', -1, page, limit);
 };
 
 const deleteProfile = async (identifier) => {
@@ -130,6 +148,7 @@ export default {
   createOrGetProfile,
   getProfileById,
   getAllProfiles,
+  searchProfiles,
   deleteProfile
 };
 
