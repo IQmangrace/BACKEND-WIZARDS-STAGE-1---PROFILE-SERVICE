@@ -51,7 +51,7 @@ const getAllProfiles = async (req, res) => {
     };
 
     const sort_by = req.query.sort_by || 'created_at';
-    const order = ['asc', 'desc'].includes(req.query.order) ? req.query.order : undefined;
+    const order = req.query.order === 'asc' ? 'asc' : 'desc';
     const page = parseInt(req.query.page) || 1;
     let limit = parseInt(req.query.limit) || 10;
 
@@ -60,15 +60,13 @@ const getAllProfiles = async (req, res) => {
     if (!validSortFields.includes(sort_by)) {
       return res.status(400).json({ status: "error", message: "Invalid sort_by parameter" });
     }
-    if (!order) {
-      return res.status(400).json({ status: "error", message: "Invalid order parameter. Use asc or desc." });
-    }
     if (page < 1) {
       return res.status(400).json({ status: "error", message: "Invalid pagination parameters" });
     }
-    if (isNaN(limit) || limit < 1 || limit > 50) {
-      return res.status(400).json({ status: "error", message: "Limit must be 1-50" });
+    if (isNaN(limit) || limit < 1) {
+      return res.status(400).json({ status: "error", message: "Limit must be 1 or greater" });
     }
+    limit = Math.min(limit, 50);
     if (req.query.min_age && isNaN(parseInt(req.query.min_age))) {
       return res.status(400).json({ status: "error", message: "min_age must be a number" });
     }
@@ -95,7 +93,7 @@ const getAllProfiles = async (req, res) => {
       status: "success",
       page,
       limit,
-      total: result.total,
+      total_count: result.total,
       data: result.data
     });
   } catch (error) {
@@ -137,12 +135,12 @@ const searchProfiles = async (req, res) => {
       status: "success",
       page,
       limit,
-      total: result.total,
+      total_count: result.total,
       data: result.data
     });
   } catch (error) {
     if (error.message === 'Unable to interpret query') {
-      return res.status(400).json({ status: "error", message: "Unable to interpret query" });
+      return res.status(422).json({ status: "error", message: "Unable to interpret query" });
     }
     console.error("Search Profiles Error:", error);
     return res.status(500).json({

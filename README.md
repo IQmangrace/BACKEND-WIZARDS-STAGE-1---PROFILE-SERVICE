@@ -3,6 +3,13 @@
 ## Overview
 This is a RESTful API that enriches names using three external APIs (Genderize, Agify, Nationalize), stores the processed profiles in MongoDB, and provides advanced querying capabilities including filtering, sorting, pagination, and natural language search.
 
+## Installation
+1. Clone the repository.
+2. Install dependencies: `npm install`.
+3. Set up environment variables in `.env` file: `MONGO_URI=<your_mongo_connection_string>`.
+4. Seed the database: `node seed.js`.
+5. Start the server: `npm start` or `npm run dev` for development.
+
 ## Features Implemented
 - Integration with Genderize, Agify, and Nationalize APIs
 - Data processing and enrichment (age_group, best country, etc.)
