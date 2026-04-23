@@ -22,10 +22,12 @@ app.get('/', (req, res) => {
   res.json({ message: "✅ Backend Wizards Stage 1 API (ESM)" });
 });
 
-// Connect DB
-connectDB();
+// Connect DB and start server
+const startServer = async () => {
+  await connectDB();
+  app.listen(PORT, () => {
+    console.log(`🚀 Server on http://localhost:${PORT}`);
+  });
+};
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server on http://localhost:${PORT}`);
-});
+startServer();
