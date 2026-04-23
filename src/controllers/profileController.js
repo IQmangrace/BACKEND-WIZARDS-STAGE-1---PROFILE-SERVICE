@@ -63,10 +63,9 @@ const getAllProfiles = async (req, res) => {
     if (page < 1) {
       return res.status(400).json({ status: "error", message: "Invalid pagination parameters" });
     }
-    if (isNaN(limit) || limit < 1) {
-      return res.status(400).json({ status: "error", message: "Limit must be 1 or greater" });
+    if (isNaN(limit) || limit < 1 || limit > 50) {
+      return res.status(400).json({ status: "error", message: "Limit must be 1-50" });
     }
-    limit = Math.min(limit, 50);
     if (req.query.min_age && isNaN(parseInt(req.query.min_age))) {
       return res.status(400).json({ status: "error", message: "min_age must be a number" });
     }
@@ -93,7 +92,7 @@ const getAllProfiles = async (req, res) => {
       status: "success",
       page,
       limit,
-      total_count: result.total,
+      total: result.total,
       data: result.data
     });
   } catch (error) {
@@ -135,12 +134,12 @@ const searchProfiles = async (req, res) => {
       status: "success",
       page,
       limit,
-      total_count: result.total,
+      total: result.total,
       data: result.data
     });
   } catch (error) {
     if (error.message === 'Unable to interpret query') {
-      return res.status(422).json({ status: "error", message: "Unable to interpret query" });
+      return res.status(400).json({ status: "error", message: "Unable to interpret query" });
     }
     console.error("Search Profiles Error:", error);
     return res.status(500).json({
